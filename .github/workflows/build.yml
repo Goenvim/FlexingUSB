@@ -35,8 +35,11 @@ jobs:
     
     - name: Check binary
       run: |
-        .build/debug/FlexingUSB --help
-        .build/release/FlexingUSB --help
+        $(swift build --show-bin-path)/FlexingUSB --help
+    
+    - name: Check release binary
+      run: |
+        $(swift build -c release --show-bin-path)/FlexingUSB --help
 
   lint:
     name: Code Quality
