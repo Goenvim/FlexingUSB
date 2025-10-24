@@ -541,10 +541,10 @@ SOFTWARE.
 - ✅ Drag-and-drop file path support
 - ✅ Simple y/n confirmations
 
-### v1.2 (Planned - Late October 2025)
+### v1.2 (Planned - Late October-November 2025)
 - Unit test suite
 - Complete bad blocks implementation
-- Homebrew formula
+- Homebrew formula (Hopefully)
 - Write speed benchmarking
 - Performance profiling tools
 - Bug fixes and stability improvements
