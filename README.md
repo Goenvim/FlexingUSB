@@ -16,6 +16,12 @@
 
 **FlexingUSB** is a native Swift command-line utility designed to make ISO-to-USB creation simple, safe, and transparent for macOS users. It's a modern alternative to tools like `dd`, `asr`, and Etcher—but entirely terminal-based with professional-grade safety features.
 
+**macOS versions:** Supported on Catalina (10.15) and newer.
+
+**Requirements:** Admin/sudo, external USB drive, and that you’re OK with the tool unmounting/erasing the target disk.
+
+**Performance:** Similar or better on Intel—actual speed depends on your USB port (USB 2.0 vs 3.x), the drive, and the ISO size.
+
 ### Key Features
 
 - **Safety First**: Never touches internal drives (`/dev/disk0`) - multiple safety checks prevent accidents
