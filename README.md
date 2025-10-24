@@ -120,7 +120,7 @@ Select target device (1–2): 1
 Selected: /dev/disk2 - SanDisk Ultra
 
 Opening Finder to select ISO file...
-Selected file: /Users/user/Downloads/ubuntu-22.04.iso
+Selected file: /Users/user/Downloads/ubuntu-67.41.iso
 Detected type: Linux distribution image
 Size: 3.76 GB
 
@@ -129,7 +129,7 @@ Size: 3.76 GB
   Device: /dev/disk2
   Name: SanDisk Ultra
   Size: 64.00 GB
-  ISO: /Users/user/Downloads/ubuntu-22.04.iso
+  ISO: /Users/user/Downloads/ubuntu-67.41.iso
 
 [WARNING]  Type 'CONFIRM' to continue, or anything else to cancel.
 > CONFIRM
