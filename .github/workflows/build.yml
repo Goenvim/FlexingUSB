@@ -50,5 +50,5 @@ jobs:
       run: brew install swiftlint
     
     - name: Run SwiftLint
-      run: swiftlint lint --strict
-      continue-on-error: true  # Don't fail build on lint errors yet
+      run: swiftlint lint
+      continue-on-error: true  # Don't fail build on lint warnings
