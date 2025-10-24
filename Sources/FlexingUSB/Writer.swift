@@ -1,5 +1,6 @@
 import Foundation
 import CryptoKit
+import Darwin
 
 /// Thread-safe flag for controlling async operations
 private class RunFlag {
@@ -54,6 +55,32 @@ class Writer {
         self.diskManager = DiskManager()
     }
     
+    /// Write ISO to USB using DIRECT I/O (much faster than dd!)
+    func writeWithDirectIO(dryRun: Bool = false) throws {
+        // Safety check
+        try diskManager.verifySafeDisk(diskIdentifier)
+        
+        // Unmount the disk first
+        UI.printMessage("Unmounting disk...", color: .cyan)
+        try diskManager.unmountDisk(diskIdentifier)
+        
+        if dryRun {
+            UI.printWarning("[DRY RUN] Would execute:")
+            UI.printMessage("sudo dd if=\(isoPath) of=/dev/r\(diskIdentifier) bs=1m", color: .white)
+            return
+        }
+        
+        // Use rdisk for better performance
+        let targetDevice = "/dev/r\(diskIdentifier)"
+        
+        UI.printMessage("Note: You may be prompted for your password (sudo required)", color: .yellow)
+        print()
+        
+        // Use DirectWriter for REAL progress and MUCH faster speed
+        let writer = DirectWriter(isoPath: isoPath, devicePath: targetDevice)
+        try writer.write()
+    }
+    
     /// Write ISO to USB using dd command
     func writeWithDD(dryRun: Bool = false) throws {
         // Safety check
@@ -89,41 +116,79 @@ class Writer {
         let uidString = String(data: uidData, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "1000"
         let needsSudo = uidString != "0"
         
-        // Build the command
+        // Get ISO size
+        let isoSize = try FileManager.default.attributesOfItem(atPath: isoPath)[.size] as? Int64 ?? 0
+        let isoSizeMB = Double(isoSize) / 1_000_000
+        
+        UI.printMessage("ISO size: \(String(format: "%.2f", isoSizeMB)) MB", color: .cyan)
+        print()
+        
+        // Build optimized dd command
+        // Use 8MB blocks for maximum speed, conv=sync for proper alignment
         let process = Process()
         if needsSudo {
             UI.printMessage("Note: You may be prompted for your password (sudo required)", color: .yellow)
             process.executableURL = URL(fileURLWithPath: "/usr/bin/sudo")
-            process.arguments = ["/bin/dd", "if=\(isoPath)", "of=\(targetDevice)", "bs=1m"]
+            process.arguments = ["/bin/dd", 
+                               "if=\(isoPath)", 
+                               "of=\(targetDevice)", 
+                               "bs=8m",           // 8MB blocks = fastest
+                               "conv=sync"]       // Proper alignment
         } else {
             process.executableURL = URL(fileURLWithPath: "/bin/dd")
-            process.arguments = ["if=\(isoPath)", "of=\(targetDevice)", "bs=1m"]
+            process.arguments = ["if=\(isoPath)", 
+                               "of=\(targetDevice)", 
+                               "bs=8m",
+                               "conv=sync"]
         }
         
+        let outputPipe = Pipe()
         let errorPipe = Pipe()
+        process.standardOutput = outputPipe
         process.standardError = errorPipe
         
-        // Start the write process
         try process.run()
-        
-        // Monitor progress (dd doesn't provide easy progress, so we'll show a spinner)
         let startTime = Date()
+        
+        // Simple progress using elapsed time and file operations
+        UI.printMessage("Writing to USB... This will take several minutes.", color: .cyan)
+        UI.printMessage("Progress updates every 5 seconds:", color: .white)
+        print()
+        
         let isRunning = RunFlag()
         
+        // Monitor in background
         DispatchQueue.global().async {
-            let spinner = ["|", "/", "-", "\\"]
-            var index = 0
+            var iteration = 0
+            
             while isRunning.value {
-                print("\r\(spinner[index % spinner.count]) Writing... (elapsed: \(Int(Date().timeIntervalSince(startTime)))s)", terminator: "")
+                Thread.sleep(forTimeInterval: 5.0)
+                
+                let elapsed = Date().timeIntervalSince(startTime)
+                iteration += 1
+                
+                // Send SIGINFO to dd
+                kill(process.processIdentifier, SIGINFO)
+                
+                // Simple time-based progress
+                let minutes = Int(elapsed / 60)
+                let seconds = Int(elapsed.truncatingRemainder(dividingBy: 60))
+                
+                print("\r\u{001B}[K⏱️  Elapsed: \(minutes)m \(seconds)s | Writing at maximum speed...  ", terminator: "")
                 fflush(stdout)
-                index += 1
-                Thread.sleep(forTimeInterval: 0.2)
             }
         }
         
+        // Wait for completion
         process.waitUntilExit()
         isRunning.value = false
-        print() // New line after spinner
+        
+        let totalTime = Date().timeIntervalSince(startTime)
+        let totalMinutes = Int(totalTime / 60)
+        let totalSeconds = Int(totalTime.truncatingRemainder(dividingBy: 60))
+        
+        print()
+        print()
         
         if process.terminationStatus != 0 {
             let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
@@ -131,11 +196,26 @@ class Writer {
             throw WriterError.writeFailed(errorMessage)
         }
         
+        // Read dd's final statistics
+        let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+        if let output = String(data: errorData, encoding: .utf8), !output.isEmpty {
+            // Show last line which has the summary
+            let lines = output.components(separatedBy: "\n").filter { !$0.isEmpty }
+            if let lastLine = lines.last {
+                UI.printMessage("dd stats: \(lastLine)", color: .white)
+            }
+        }
+        
+        UI.printSuccess("Write complete in \(totalMinutes)m \(totalSeconds)s!")
+        let avgSpeed = isoSizeMB / totalTime
+        UI.printMessage("Average speed: \(String(format: "%.1f", avgSpeed)) MB/s", color: .cyan)
+        
         // Sync to ensure all data is written
-        UI.printMessage("Syncing disk...", color: .cyan)
+        print()
+        UI.printMessage("Syncing disk (ensuring all data is written)...", color: .cyan)
         try syncDisk()
         
-        UI.printSuccess("Write complete!")
+        UI.printSuccess("Sync complete!")
     }
     
     /// Write ISO to USB using asr (Apple Software Restore) - preferred method for macOS

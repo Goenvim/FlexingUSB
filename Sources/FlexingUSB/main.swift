@@ -61,12 +61,27 @@ extension FlexingUSB {
             UI.printMessage("Selected: \(selectedDisk.devicePath) - \(selectedDisk.displayName)", color: .green)
             print()
             
+            // Step 2.5: Optional bad blocks check (Rufus-inspired)
+            if UI.promptYesNo("Check USB for fake/counterfeit capacity? (Rufus-style check)", defaultYes: false) {
+                let checker = BadBlockChecker(diskIdentifier: selectedDisk.DeviceIdentifier)
+                _ = try checker.quickCapacityCheck()
+                print()
+            }
+            
             // Step 3: Select ISO file
-            UI.printMessage("Opening Finder to select ISO file...", color: .cyan)
-            guard let isoPath = UI.selectISOFile() else {
-                UI.printError("No ISO file selected")
+            print()
+            UI.printMessage("Enter the path to your ISO file:", color: .cyan)
+            UI.printMessage("(Tip: Drag and drop the ISO file here, or paste the path)", color: .white)
+            print("ISO path: ", terminator: "")
+            fflush(stdout)
+            
+            guard let input = readLine()?.trimmingCharacters(in: .whitespacesAndNewlines) else {
+                UI.printError("No path provided")
                 throw ExitCode.failure
             }
+            
+            // Remove quotes if user dragged and dropped
+            let isoPath = input.replacingOccurrences(of: "\"", with: "").replacingOccurrences(of: "'", with: "")
             
             print()
             UI.printMessage("Selected file: \(isoPath)", color: .green)
@@ -100,16 +115,16 @@ extension FlexingUSB {
             UI.printMessage("  ISO: \(isoPath)", color: .white)
             print()
             
-            if !UI.promptConfirmation("CONFIRM") {
+            if !UI.promptYesNo("Continue with write operation?", defaultYes: false) {
                 UI.printWarning("Operation cancelled")
                 throw ExitCode.failure
             }
             
             print()
             
-            // Step 7: Write ISO to USB
+            // Step 7: Write ISO to USB using DIRECT I/O (much faster!)
             let writer = Writer(isoPath: finalISOPath, diskIdentifier: selectedDisk.DeviceIdentifier)
-            try writer.writeWithDD(dryRun: dryRun)
+            try writer.writeWithDirectIO(dryRun: dryRun)
             
             if dryRun {
                 UI.printSuccess("Dry run completed successfully")
@@ -189,7 +204,7 @@ extension FlexingUSB {
             UI.printMessage("  Name: \(volumeName)", color: .white)
             print()
             
-            if !UI.promptConfirmation("CONFIRM") {
+            if !UI.promptYesNo("Continue with format operation?", defaultYes: false) {
                 UI.printWarning("Operation cancelled")
                 throw ExitCode.failure
             }

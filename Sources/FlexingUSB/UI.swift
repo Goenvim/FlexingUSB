@@ -81,7 +81,7 @@ struct UI {
     
     /// Display a progress bar
     static func showProgress(current: Int64, total: Int64, message: String = "Progress") {
-        let percentage = Double(current) / Double(total) * 100.0
+        let percentage = min(Double(current) / Double(total) * 100.0, 99.9) // Cap at 99.9% until truly done
         let barLength = 40
         let filled = Int(percentage / 100.0 * Double(barLength))
         let bar = String(repeating: "█", count: filled) + String(repeating: "░", count: barLength - filled)
@@ -91,10 +91,11 @@ struct UI {
         
         print("\r\(message): [\(bar)] \(String(format: "%.1f", percentage))% (\(String(format: "%.1f", currentMB))MB / \(String(format: "%.1f", totalMB))MB)", terminator: "")
         fflush(stdout)
-        
-        if current >= total {
-            print() // New line when complete
-        }
+    }
+    
+    /// Complete the progress bar and move to new line
+    static func completeProgress() {
+        print() // New line after progress is done
     }
     
     /// Open Finder dialog to select an ISO file
@@ -102,9 +103,13 @@ struct UI {
         let panel = NSOpenPanel()
         panel.title = "Select ISO File"
         panel.message = "Choose an ISO image to write to USB"
+        panel.prompt = "Open"
         panel.canChooseFiles = true
         panel.canChooseDirectories = false
         panel.allowsMultipleSelection = false
+        panel.treatsFilePackagesAsDirectories = false
+        panel.canCreateDirectories = false
+        panel.showsHiddenFiles = false
         
         // Use allowedFileTypes for compatibility with macOS 10.15+
         if #available(macOS 11.0, *) {
@@ -113,12 +118,18 @@ struct UI {
             panel.allowedFileTypes = ["iso"]
         }
         
-        // Run modal synchronously
+        // Set initial directory to Downloads
+        let downloadsURL = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
+        panel.directoryURL = downloadsURL
+        
+        // Don't try to activate - let the panel handle its own presentation
+        // Run modal and block until user clicks Open or Cancel
         let response = panel.runModal()
         
         if response == .OK, let url = panel.url {
             return url.path
         }
+        
         return nil
     }
 }

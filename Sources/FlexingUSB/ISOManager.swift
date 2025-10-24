@@ -152,27 +152,62 @@ class ISOManager {
         }
     }
     
-    /// Calculate SHA256 checksum of the ISO file
-    func calculateChecksum(progressCallback: ((Int64, Int64) -> Void)? = nil) throws -> String {
-        let bufferSize = 1024 * 1024 * 10 // 10MB buffer
+    /// Calculate SHA256 checksum of the ISO file (Rufus-style multi-hash support)
+    func calculateChecksum(algorithm: String = "SHA256", progressCallback: ((Int64, Int64) -> Void)? = nil) throws -> String {
+        let bufferSize = 1024 * 1024 * 10 // 10MB buffer (Rufus uses large buffers too)
         let fileHandle = try FileHandle(forReadingFrom: URL(fileURLWithPath: isoPath))
         defer { try? fileHandle.close() }
         
-        var hasher = SHA256()
         var totalRead: Int64 = 0
         let fileSize = try getFileSize()
         
-        while autoreleasepool(invoking: {
-            let data = fileHandle.readData(ofLength: bufferSize)
-            if data.isEmpty { return false }
-            hasher.update(data: data)
-            totalRead += Int64(data.count)
-            progressCallback?(totalRead, fileSize)
-            return true
-        }) {}
+        switch algorithm.uppercased() {
+        case "SHA256":
+            var hasher = SHA256()
+            while autoreleasepool(invoking: {
+                let data = fileHandle.readData(ofLength: bufferSize)
+                if data.isEmpty { return false }
+                hasher.update(data: data)
+                totalRead += Int64(data.count)
+                progressCallback?(totalRead, fileSize)
+                return true
+            }) {}
+            let digest = hasher.finalize()
+            return digest.map { String(format: "%02x", $0) }.joined()
+            
+        case "SHA512":
+            var hasher = SHA512()
+            while autoreleasepool(invoking: {
+                let data = fileHandle.readData(ofLength: bufferSize)
+                if data.isEmpty { return false }
+                hasher.update(data: data)
+                totalRead += Int64(data.count)
+                progressCallback?(totalRead, fileSize)
+                return true
+            }) {}
+            let digest = hasher.finalize()
+            return digest.map { String(format: "%02x", $0) }.joined()
+            
+        default:
+            throw ISOError.invalidISO
+        }
+    }
+    
+    /// Calculate all supported checksums like Rufus does
+    func calculateAllChecksums() throws -> [String: String] {
+        var checksums: [String: String] = [:]
         
-        let digest = hasher.finalize()
-        return digest.map { String(format: "%02x", $0) }.joined()
+        UI.printMessage("Calculating checksums (like Rufus)...", color: .cyan)
+        
+        // SHA256 (most common)
+        UI.printMessage("  Computing SHA256...", color: .white)
+        checksums["SHA256"] = try calculateChecksum(algorithm: "SHA256")
+        
+        // SHA512 (more secure)
+        UI.printMessage("  Computing SHA512...", color: .white)
+        checksums["SHA512"] = try calculateChecksum(algorithm: "SHA512")
+        
+        return checksums
     }
     
     /// Patch Windows ISO to remove TPM/Secure Boot requirements (placeholder)
