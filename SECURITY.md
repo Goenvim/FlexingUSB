@@ -323,5 +323,5 @@ Users are responsible for:
 
 ---
 
-**Last Updated**: October 23, 2024
-**Version**: 1.0.0
+**Last Updated**: October 24, 2025
+**Version**: 1.1.0
