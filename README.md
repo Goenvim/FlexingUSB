@@ -57,6 +57,12 @@ See [CHANGELOG.md](CHANGELOG.md) for full details.
 - **Storage**: ~2MB for binary
 - **USB**: Any external USB drive (will be erased during writing)
 
+**macOS versions:** Supported on Catalina (10.15) and newer.
+
+**Requirements:** Admin/sudo, external USB drive, and that you’re OK with the tool unmounting/erasing the target disk.
+
+**Performance:** Similar or better on Intel—actual speed depends on your USB port (USB 2.0 vs 3.x), the drive, and the ISO size.
+
 ### Key Features
 
 - ⚡ **3-5x Faster**: Direct I/O writes at 30-50 MB/s (was 10-15 MB/s with dd)
@@ -526,7 +532,7 @@ SOFTWARE.
 
 ## Roadmap
 
-### v1.1.0 (Current - Released October 2025)
+### v1.1.0 (Current - Released October 24, 2025)
 - ✅ Direct I/O writer with 16MB buffers
 - ✅ Real-time progress with speed & ETA
 - ✅ Fake USB detection (Rufus-inspired)
@@ -535,20 +541,27 @@ SOFTWARE.
 - ✅ Drag-and-drop file path support
 - ✅ Simple y/n confirmations
 
-### v1.2 (Planned)
+### v1.2 (Planned - Late October 2025)
 - Unit test suite
 - Complete bad blocks implementation
 - Homebrew formula
 - Write speed benchmarking
 - Performance profiling tools
+- Bug fixes and stability improvements
 
-### v2.0 (Future)
+### v1.3 or v2.0 (Planned - Christmas 2025)
 - Full Windows ISO patching implementation
-- GUI mode with SwiftUI
+- GUI mode with SwiftUI (optional)
 - Preset profiles for popular ISOs
 - Multi-USB writing (parallel writes)
 - Disk cloning functionality
 - Network ISO downloads
+- Enhanced verification options
+
+### v2.x (Future - 2026)
+- Advanced features and community requests
+- Performance optimizations
+- Platform expansion considerations
 
 ---
 
