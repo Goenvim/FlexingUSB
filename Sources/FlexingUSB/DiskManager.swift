@@ -88,8 +88,11 @@ class DiskManager {
         let diskutilList = try decoder.decode(DiskUtilList.self, from: data)
         
         // Filter to get only whole disks (not partitions)
+        // Partitions have format like "disk2s1", whole disks are just "disk2"
         let disks = diskutilList.AllDisksAndPartitions.filter { disk in
-            return !disk.DeviceIdentifier.contains("s") // Exclude partitions like disk2s1
+            let id = disk.DeviceIdentifier
+            // Check if it matches pattern diskN (not diskNsM)
+            return id.range(of: "^disk[0-9]+$", options: .regularExpression) != nil
         }
         
         return disks

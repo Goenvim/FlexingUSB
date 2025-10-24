@@ -29,9 +29,9 @@ jobs:
     - name: Build release
       run: swift build -c release -v
     
-    - name: Run tests
-      run: swift test -v
-      continue-on-error: true  # Tests not yet implemented
+    # - name: Run tests
+    #   run: swift test -v
+    #   continue-on-error: true  # Tests not yet implemented
     
     - name: Check binary
       run: |
