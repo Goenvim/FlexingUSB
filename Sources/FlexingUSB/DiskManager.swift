@@ -89,13 +89,94 @@ class DiskManager {
         
         // Filter to get only whole disks (not partitions)
         // Partitions have format like "disk2s1", whole disks are just "disk2"
-        let disks = diskutilList.AllDisksAndPartitions.filter { disk in
+        let candidates = diskutilList.AllDisksAndPartitions.filter { disk in
             let id = disk.DeviceIdentifier
             // Check if it matches pattern diskN (not diskNsM)
             return id.range(of: "^disk[0-9]+$", options: .regularExpression) != nil
         }
-        
+
+        // Further filter candidates by querying `diskutil info -plist` for each
+        // and ensure the disk is not internal and is likely a removable USB device.
+        var disks: [DiskInfo] = []
+        for candidate in candidates {
+            do {
+                if try isPhysicalExternalUSB(candidate.DeviceIdentifier) {
+                    disks.append(candidate)
+                }
+            } catch {
+                // If we fail to query info for a disk, skip it conservatively
+                continue
+            }
+        }
+
         return disks
+    }
+
+    /// Determine whether a disk identifier corresponds to a physical, external USB/removable device.
+    /// This calls `diskutil info -plist <disk>` and checks several keys conservatively.
+    private func isPhysicalExternalUSB(_ diskIdentifier: String) throws -> Bool {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/sbin/diskutil")
+        process.arguments = ["info", "-plist", diskIdentifier]
+
+        let pipe = Pipe()
+        let errorPipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = errorPipe
+
+        try process.run()
+        process.waitUntilExit()
+
+        guard process.terminationStatus == 0 else {
+            // If diskutil fails for this disk, consider it non-physical for safety
+            return false
+        }
+
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+
+        // Parse plist into a dictionary
+        var format = PropertyListSerialization.PropertyListFormat.xml
+        guard let plist = try? PropertyListSerialization.propertyList(from: data, options: [], format: &format) as? [String: Any] else {
+            return false
+        }
+
+        // If `Internal` is true, exclude immediately
+        if let internalFlag = plist["Internal"] as? Bool, internalFlag == true {
+            return false
+        }
+
+        // If the system marks this as a virtual device, exclude it
+        if let virtualStr = plist["VirtualOrPhysical"] as? String, virtualStr.lowercased().contains("virtual") {
+            return false
+        }
+
+        // If RemovableMedia explicitly true -> include unless it's virtual/disk image
+        if let removable = plist["RemovableMedia"] as? Bool {
+            if removable {
+                // Check BusProtocol for disk image indicators
+                if let busProtocol = plist["BusProtocol"] as? String, busProtocol.lowercased().contains("disk image") {
+                    return false
+                }
+                return true
+            }
+            // If explicitly false, treat as non-removable unless other USB hints exist
+        }
+
+        // Look for strong hints that the device is connected over USB
+        if let busProtocol = plist["BusProtocol"] as? String, busProtocol.lowercased().contains("usb") {
+            return true
+        }
+
+        if let protocolStr = plist["Protocol"] as? String, protocolStr.lowercased().contains("usb") {
+            return true
+        }
+
+        if let deviceTree = plist["DeviceTreePath"] as? String, deviceTree.lowercased().contains("usb") {
+            return true
+        }
+
+        // Conservative default: exclude
+        return false
     }
     
     /// Verify that a disk identifier is safe to use (not internal disk)
