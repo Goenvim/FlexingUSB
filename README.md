@@ -33,13 +33,13 @@
 
 **Performance Revolution!**
 
-- ⚡ **3-5x Faster Writes**: Direct I/O implementation achieves 30-50 MB/s (was 10-15 MB/s)
-- 📊 **Real Progress Bar**: Live speed, ETA, and percentage updates
-- 🔍 **Fake USB Detection**: Warns about counterfeit drives (Rufus-inspired)
-- 🔐 **SHA-512 Support**: Enhanced hash verification options
-- 🖱️ **Better UX**: Drag-and-drop paths, simple y/n confirmations
-- 💾 **16MB Buffers**: Optimized for maximum throughput
-- ⏱️ **Example**: 2.8GB Linux Mint ISO now writes in **1-1.5 minutes** (was 2-4 minutes)
+-  **FAST Writes**: Direct I/O implementation achieves 30-50 MB/s (was 10-15 MB/s)
+-  **Real Progress Bar**: Live speed, ETA, and percentage updates
+-  **Fake USB Detection**: Warns about counterfeit drives (Rufus-inspired)
+-  **SHA-512 Support**: Enhanced hash verification options
+-  **Better UX**: Drag-and-drop paths, simple y/n confirmations
+-  **16MB Buffers**: Optimized for maximum throughput
+-  **Example**: 2.8GB Linux Mint ISO now writes in **1-1.5 minutes** (was 2-4 minutes)
 
 See [CHANGELOG.md](CHANGELOG.md) for full details.
 
