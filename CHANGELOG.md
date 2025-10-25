@@ -5,6 +5,49 @@ All notable changes to FlexingUSB will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.5] - 2025-10-25
+
+### Added
+- Global launcher script (flexingusb command) - run from anywhere
+- Enhanced ISO technical specifications with detailed analysis
+- Enhanced USB drive technical specifications with performance info
+- Quick operations for common tasks (flash, restore, info, status)
+- One-line installation script for easy setup
+- Technical specifications commands (specs --iso, specs --usb)
+- Quick command shortcuts (quick flash, quick restore, quick info, quick status)
+- Improved system integration and better PATH handling
+
+### New Commands
+- `FlexingUSB specs --iso <path>` - Analyze ISO files with detailed technical specs
+- `FlexingUSB specs --usb <disk>` - Analyze USB drives with performance info
+- `FlexingUSB specs --all` - Show specifications for all available USB drives
+- `FlexingUSB quick flash --iso <path>` - Quick flash operation using first available USB
+- `FlexingUSB quick restore` - Quick restore operation formatting first available USB
+- `FlexingUSB quick info` - Quick information about connected USB drives
+- `FlexingUSB quick status` - System status and drive information
+- `flexingusb` - Global launcher script (shorter command name)
+
+### Enhanced Features
+- ISO file analysis: file size, type, file system, boot type, architecture, creation date
+- USB drive analysis: device info, USB speed, version, performance estimates, safety status
+- Global launcher script allows running FlexingUSB from any directory
+- One-line installation: `curl -sSL https://raw.githubusercontent.com/Goenvim/FlexingUSB/main/install.sh | bash`
+- Improved Makefile with launcher script installation
+- Enhanced documentation with all new features
+
+### Files Added
+- `scripts/flexingusb` - Global launcher script
+- `install.sh` - One-line installation script
+- `PUBLISHING_GUIDE.md` - Complete publishing documentation
+- `.gitignore` - Git ignore file for build artifacts
+
+### Files Enhanced
+- `README.md` - Updated with new features and installation options
+- `Makefile` - Updated installation process with launcher script
+- `main.swift` - Added specs and quick commands
+- `ISOManager.swift` - Added technical specifications methods
+- `DiskManager.swift` - Added USB technical specifications methods
+
 ## [1.1.0] - 2025-10-24
 
 ### Added
@@ -56,49 +99,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Multiple safety checks to prevent accidental internal disk operations
 - Explicit confirmation required before any destructive operation
 - External disk verification before any write operation
-
-## [1.1.5] - 2025-10-25
-
-### Added
-- Global launcher script (flexingusb command) - run from anywhere
-- Enhanced ISO technical specifications with detailed analysis
-- Enhanced USB drive technical specifications with performance info
-- Quick operations for common tasks (flash, restore, info, status)
-- One-line installation script for easy setup
-- Technical specifications commands (specs --iso, specs --usb)
-- Quick command shortcuts (quick flash, quick restore, quick info, quick status)
-- Improved system integration and better PATH handling
-
-### New Commands
-- `FlexingUSB specs --iso <path>` - Analyze ISO files with detailed technical specs
-- `FlexingUSB specs --usb <disk>` - Analyze USB drives with performance info
-- `FlexingUSB specs --all` - Show specifications for all available USB drives
-- `FlexingUSB quick flash --iso <path>` - Quick flash operation using first available USB
-- `FlexingUSB quick restore` - Quick restore operation formatting first available USB
-- `FlexingUSB quick info` - Quick information about connected USB drives
-- `FlexingUSB quick status` - System status and drive information
-- `flexingusb` - Global launcher script (shorter command name)
-
-### Enhanced Features
-- ISO file analysis: file size, type, file system, boot type, architecture, creation date
-- USB drive analysis: device info, USB speed, version, performance estimates, safety status
-- Global launcher script allows running FlexingUSB from any directory
-- One-line installation: `curl -sSL https://raw.githubusercontent.com/Goenvim/FlexingUSB/main/install.sh | bash`
-- Improved Makefile with launcher script installation
-- Enhanced documentation with all new features
-
-### Files Added
-- `scripts/flexingusb` - Global launcher script
-- `install.sh` - One-line installation script
-- `PUBLISHING_GUIDE.md` - Complete publishing documentation
-- `.gitignore` - Git ignore file for build artifacts
-
-### Files Enhanced
-- `README.md` - Updated with new features and installation options
-- `Makefile` - Updated installation process with launcher script
-- `main.swift` - Added specs and quick commands
-- `ISOManager.swift` - Added technical specifications methods
-- `DiskManager.swift` - Added USB technical specifications methods
 
 ## [Unreleased]
 
