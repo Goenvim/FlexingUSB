@@ -23,11 +23,20 @@ Package.resolved
 *.swp
 *.swo
 
-# Release artifacts (keep some for distribution)
-# release/
+# Release artifacts
+release/
 *.zip
 *.dmg
 
 # Xcode
 *.xcuserstate
 *.xcuserdatad/
+
+# Development files
+PUBLISHING_GUIDE.md
+NEW_FEATURES.md
+
+# Local development
+*.swp
+*.swo
+*~

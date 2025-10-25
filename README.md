@@ -7,7 +7,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/platform-macOS-lightgrey.svg" alt="Platform">
   <img src="https://img.shields.io/badge/swift-5.9+-orange.svg" alt="Swift 5.9+">
-  <img src="https://img.shields.io/badge/version-1.15-brightgreen.svg" alt="Version 1.15">
+  <img src="https://img.shields.io/badge/version-1.1.5-brightgreen.svg" alt="Version 1.1.5">
   <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License">
 </p>
 
@@ -29,7 +29,7 @@
 
 ---
 
-## What's New in v1.15
+## What's New in v1.1.5
 
 **Performance Revolution!**
 
@@ -633,7 +633,7 @@ SOFTWARE.
 
 ## Roadmap
 
-### v1.15 (Current - Released October 24, 2025)
+### v1.1.5 (Current - Released October 24, 2025)
 - ✅ Direct I/O writer with 16MB buffers
 - ✅ Real-time progress with speed & ETA
 - ✅ Fake USB detection (Rufus-inspired)
@@ -642,7 +642,7 @@ SOFTWARE.
 - ✅ Drag-and-drop file path support
 - ✅ Simple y/n confirmations
 
-### v1.16 (Planned - Late October-November 2025)
+### v1.1.6 (Planned - Late October-November 2025)
 - Unit test suite
 - Complete bad blocks implementation
 - Homebrew formula (Hopefully)
@@ -650,7 +650,7 @@ SOFTWARE.
 - Performance profiling tools
 - Bug fixes and stability improvements
 
-### v1.17 or v2.0 (Planned - Christmas 2025)
+### v1.2.0 or v2.0 (Planned - Christmas 2025)
 - Full Windows ISO patching implementation
 - GUI mode with SwiftUI (optional)
 - Preset profiles for popular ISOs

@@ -4,7 +4,7 @@
 
 set -e  # Exit on any error
 
-echo "Installing FlexingUSB..."
+echo "Installing FlexingUSB v1.1.5..."
 
 # Colors for output
 RED='\033[0;31m'
