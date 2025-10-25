@@ -635,7 +635,7 @@ SOFTWARE.
 - ✅ Drag-and-drop file path support
 - ✅ Simple y/n confirmations
 
-### v1.1.6 (Planned - Late October-November 2025)
+### v1.1.6 (Planned - Halloween or 8th November 2025)
 - Unit test suite
 - Complete bad blocks implementation
 - Homebrew formula (Hopefully)
