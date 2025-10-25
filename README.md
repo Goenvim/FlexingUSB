@@ -15,7 +15,7 @@
 
 ## Table of Contents
 
-- [What's New in v1.1.0](#whats-new-in-v110-)
+- [What's New in v1.1.5](#whats-new-in-v110-)
 - [Overview](#overview)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -39,7 +39,7 @@
 - 🔐 **SHA-512 Support**: Enhanced hash verification options
 - 🖱️ **Better UX**: Drag-and-drop paths, simple y/n confirmations
 - 💾 **16MB Buffers**: Optimized for maximum throughput
-- ⏱️ **Example**: 2.8GB Linux Mint ISO now writes in **1-2 minutes** (was 3-5 minutes)
+- ⏱️ **Example**: 2.8GB Linux Mint ISO now writes in **1-1.5 minutes** (was 2-4 minutes)
 
 See [CHANGELOG.md](CHANGELOG.md) for full details.
 
