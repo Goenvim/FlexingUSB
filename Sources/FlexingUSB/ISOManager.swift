@@ -152,6 +152,161 @@ class ISOManager {
         }
     }
     
+    /// Get detailed technical specifications of the ISO
+    func getTechnicalSpecs() -> [String: String] {
+        var specs: [String: String] = [:]
+        
+        do {
+            // File size
+            let fileSize = try getFileSize()
+            specs["File Size"] = formatBytes(fileSize)
+            
+            // File path
+            specs["File Path"] = isoPath
+            
+            // File type detection
+            let type = detectType()
+            specs["ISO Type"] = type.rawValue
+            
+            // File system information
+            specs["File System"] = detectFileSystem()
+            
+            // Boot information
+            specs["Boot Type"] = detectBootType()
+            
+            // Architecture detection
+            specs["Architecture"] = detectArchitecture()
+            
+            // Creation date
+            specs["Created"] = getCreationDate()
+            
+            // Checksum information
+            specs["Checksum Support"] = "SHA-256, SHA-512"
+            
+        } catch {
+            specs["Error"] = "Failed to read file information"
+        }
+        
+        return specs
+    }
+    
+    /// Format bytes into human-readable format
+    private func formatBytes(_ bytes: Int64) -> String {
+        let units = ["B", "KB", "MB", "GB", "TB"]
+        var size = Double(bytes)
+        var unitIndex = 0
+        
+        while size >= 1024 && unitIndex < units.count - 1 {
+            size /= 1024
+            unitIndex += 1
+        }
+        
+        return String(format: "%.2f %s", size, units[unitIndex])
+    }
+    
+    /// Detect the file system used in the ISO
+    private func detectFileSystem() -> String {
+        do {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/usr/bin/file")
+            process.arguments = ["-b", isoPath]
+            
+            let pipe = Pipe()
+            process.standardOutput = pipe
+            
+            try process.run()
+            process.waitUntilExit()
+            
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            if let output = String(data: data, encoding: .utf8) {
+                if output.contains("ISO 9660") {
+                    return "ISO 9660"
+                } else if output.contains("UDF") {
+                    return "UDF"
+                } else if output.contains("Hybrid") {
+                    return "Hybrid (ISO 9660 + UDF)"
+                }
+            }
+        } catch {
+            // Silent failure
+        }
+        return "Unknown"
+    }
+    
+    /// Detect the boot type of the ISO
+    private func detectBootType() -> String {
+        do {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/usr/bin/hdiutil")
+            process.arguments = ["imageinfo", isoPath]
+            
+            let pipe = Pipe()
+            process.standardOutput = pipe
+            
+            try process.run()
+            process.waitUntilExit()
+            
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            if let output = String(data: data, encoding: .utf8) {
+                if output.contains("Bootable") {
+                    return "Bootable"
+                } else if output.contains("Hybrid") {
+                    return "Hybrid Boot"
+                }
+            }
+        } catch {
+            // Silent failure
+        }
+        return "Unknown"
+    }
+    
+    /// Detect the architecture of the ISO
+    private func detectArchitecture() -> String {
+        do {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/usr/bin/file")
+            process.arguments = ["-b", isoPath]
+            
+            let pipe = Pipe()
+            process.standardOutput = pipe
+            
+            try process.run()
+            process.waitUntilExit()
+            
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            if let output = String(data: data, encoding: .utf8) {
+                if output.contains("x86-64") || output.contains("amd64") {
+                    return "x86-64 (64-bit)"
+                } else if output.contains("i386") || output.contains("x86") {
+                    return "x86 (32-bit)"
+                } else if output.contains("arm64") || output.contains("aarch64") {
+                    return "ARM64"
+                } else if output.contains("ppc") {
+                    return "PowerPC"
+                }
+            }
+        } catch {
+            // Silent failure
+        }
+        return "Unknown"
+    }
+    
+    /// Get the creation date of the ISO file
+    private func getCreationDate() -> String {
+        do {
+            let attributes = try FileManager.default.attributesOfItem(atPath: isoPath)
+            if let creationDate = attributes[.creationDate] as? Date {
+                let formatter = DateFormatter()
+                formatter.dateStyle = .medium
+                formatter.timeStyle = .short
+                return formatter.string(from: creationDate)
+            }
+        } catch {
+            // Silent failure
+        }
+        return "Unknown"
+    }
+    
     /// Calculate SHA256 checksum of the ISO file (Rufus-style multi-hash support)
     func calculateChecksum(algorithm: String = "SHA256", progressCallback: ((Int64, Int64) -> Void)? = nil) throws -> String {
         let bufferSize = 1024 * 1024 * 10 // 10MB buffer (Rufus uses large buffers too)

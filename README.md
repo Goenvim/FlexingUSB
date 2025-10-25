@@ -7,7 +7,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/platform-macOS-lightgrey.svg" alt="Platform">
   <img src="https://img.shields.io/badge/swift-5.9+-orange.svg" alt="Swift 5.9+">
-  <img src="https://img.shields.io/badge/version-1.1.0-brightgreen.svg" alt="Version 1.1.0">
+  <img src="https://img.shields.io/badge/version-1.15-brightgreen.svg" alt="Version 1.15">
   <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License">
 </p>
 
@@ -29,7 +29,7 @@
 
 ---
 
-## What's New in v1.1.0 🚀
+## What's New in v1.15
 
 **Performance Revolution!**
 
@@ -90,6 +90,19 @@ cd FlexingUSB-v1.1.0-macos-with-installer
 sudo ./install.sh
 ```
 
+**After installation, you can use FlexingUSB from anywhere:**
+```bash
+# Full command (works from any directory)
+FlexingUSB start
+FlexingUSB list
+FlexingUSB quick flash --iso /path/to/file.iso
+
+# Short command (also works from any directory)
+flexingusb start
+flexingusb list
+flexingusb quick flash --iso /path/to/file.iso
+```
+
 ### Option 2: Build from Source
 
 ```bash
@@ -101,7 +114,11 @@ cd FlexingUSB
 make install
 ```
 
-This will build a release version and install to `/usr/local/bin/`.
+This will build a release version and install to `/usr/local/bin/` with both commands available:
+- `FlexingUSB` - Full command
+- `flexingusb` - Short command (launcher script)
+
+**Both commands work from anywhere on your system!**
 
 ### Option 3: Manual Build
 
@@ -115,7 +132,13 @@ swift build -c release
 
 # Manually copy to PATH
 sudo cp .build/release/FlexingUSB /usr/local/bin/
+sudo cp scripts/flexingusb /usr/local/bin/flexingusb
+sudo chmod +x /usr/local/bin/flexingusb
 ```
+
+**Now you can use both commands from anywhere:**
+- `FlexingUSB` - Full command
+- `flexingusb` - Short command (launcher script)
 
 ### Option 4: Homebrew (Coming Soon)
 
@@ -123,6 +146,19 @@ sudo cp .build/release/FlexingUSB /usr/local/bin/
 # Future installation method
 brew install flexingusb
 ```
+
+### Option 5: Global Launcher Script
+
+After installation, you can also use the shorter `flexingusb` command from anywhere:
+
+```bash
+# Use the shorter command
+flexingusb start
+flexingusb list
+flexingusb quick flash --iso /path/to/file.iso
+```
+
+The launcher script automatically finds and runs the FlexingUSB binary, making it easier to use from any directory.
 
 ---
 
@@ -142,6 +178,15 @@ FlexingUSB restore
 
 # Verify a written ISO
 FlexingUSB verify /path/to/image.iso disk2
+
+# Show technical specifications
+FlexingUSB specs --iso /path/to/image.iso
+FlexingUSB specs --usb disk2
+
+# Quick operations
+FlexingUSB quick flash --iso /path/to/image.iso
+FlexingUSB quick restore
+FlexingUSB quick info
 ```
 
 ### Commands
@@ -222,6 +267,62 @@ FlexingUSB verify <iso-path> <disk-identifier>
 **Example:**
 ```bash
 FlexingUSB verify ~/Downloads/ubuntu.iso disk2
+```
+
+#### `specs` - Technical Specifications
+
+Shows detailed technical specifications for ISO files and USB drives:
+
+```bash
+FlexingUSB specs --iso <iso-path>
+FlexingUSB specs --usb <disk-identifier>
+FlexingUSB specs --all
+```
+
+**Options:**
+- `--iso`: Analyze an ISO file and show its technical specifications
+- `--usb`: Analyze a USB drive and show its technical specifications
+- `--all`: Show specifications for all available USB drives
+
+**Examples:**
+```bash
+# Analyze an ISO file
+FlexingUSB specs --iso ~/Downloads/ubuntu-22.04.iso
+
+# Analyze a USB drive
+FlexingUSB specs --usb disk2
+
+# Show all available specifications
+FlexingUSB specs --all
+```
+
+#### `quick` - Quick Operations
+
+Fast shortcuts for common ISO-to-USB tasks:
+
+```bash
+FlexingUSB quick <operation> [options]
+```
+
+**Operations:**
+- `flash`: Quickly flash an ISO to the first available USB drive
+- `restore`: Quickly restore the first available USB drive to FAT32/exFAT
+- `info`: Show quick information about connected USB drives
+- `status`: Show system status and drive information
+
+**Examples:**
+```bash
+# Quick flash (uses first available USB drive)
+FlexingUSB quick flash --iso ~/Downloads/ubuntu.iso
+
+# Quick restore (formats first available USB drive)
+FlexingUSB quick restore
+
+# Quick info about USB drives
+FlexingUSB quick info
+
+# System status
+FlexingUSB quick status --iso ~/Downloads/ubuntu.iso
 ```
 
 ---
@@ -532,7 +633,7 @@ SOFTWARE.
 
 ## Roadmap
 
-### v1.1.0 (Current - Released October 24, 2025)
+### v1.15 (Current - Released October 24, 2025)
 - ✅ Direct I/O writer with 16MB buffers
 - ✅ Real-time progress with speed & ETA
 - ✅ Fake USB detection (Rufus-inspired)
@@ -541,7 +642,7 @@ SOFTWARE.
 - ✅ Drag-and-drop file path support
 - ✅ Simple y/n confirmations
 
-### v1.2 (Planned - Late October-November 2025)
+### v1.16 (Planned - Late October-November 2025)
 - Unit test suite
 - Complete bad blocks implementation
 - Homebrew formula (Hopefully)
@@ -549,7 +650,7 @@ SOFTWARE.
 - Performance profiling tools
 - Bug fixes and stability improvements
 
-### v1.3 or v2.0 (Planned - Christmas 2025)
+### v1.17 or v2.0 (Planned - Christmas 2025)
 - Full Windows ISO patching implementation
 - GUI mode with SwiftUI (optional)
 - Preset profiles for popular ISOs

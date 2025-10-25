@@ -17,12 +17,15 @@ release:
 install: release
 	@echo "Installing FlexingUSB to /usr/local/bin..."
 	@sudo cp .build/release/FlexingUSB /usr/local/bin/FlexingUSB
-	@echo "✅ Installation complete! Run 'FlexingUSB --help' to get started."
+	@sudo cp scripts/flexingusb /usr/local/bin/flexingusb
+	@sudo chmod +x /usr/local/bin/flexingusb
+	@echo "✅ Installation complete! Run 'FlexingUSB --help' or 'flexingusb --help' to get started."
 
 # Uninstall from /usr/local/bin
 uninstall:
 	@echo "Uninstalling FlexingUSB..."
 	@sudo rm -f /usr/local/bin/FlexingUSB
+	@sudo rm -f /usr/local/bin/flexingusb
 	@echo "✅ Uninstall complete."
 
 # Clean build artifacts

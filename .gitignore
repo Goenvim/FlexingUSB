@@ -1,8 +1,33 @@
+# Build artifacts
+.build/
+*.xcodeproj/
+*.xcworkspace/
+
+# Swift Package Manager
+.swiftpm/
+Package.resolved
+
+# macOS
 .DS_Store
-/.build
-/Packages
-xcuserdata/
-DerivedData/
-.swiftpm/configuration/registries.json
-.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
-.netrc
+.AppleDouble
+.LSOverride
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Release artifacts (keep some for distribution)
+# release/
+*.zip
+*.dmg
+
+# Xcode
+*.xcuserstate
+*.xcuserdatad/

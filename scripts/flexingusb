@@ -1,0 +1,27 @@
+#!/bin/bash
+# FlexingUSB Global Launcher Script
+# This script allows running FlexingUSB from anywhere in the system
+
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+FLEXINGUSB_DIR="$(dirname "$SCRIPT_DIR")"
+
+# Path to the FlexingUSB binary
+FLEXINGUSB_BINARY="$FLEXINGUSB_DIR/.build/release/FlexingUSB"
+
+# Check if the binary exists
+if [ ! -f "$FLEXINGUSB_BINARY" ]; then
+    echo "❌ FlexingUSB binary not found at: $FLEXINGUSB_BINARY"
+    echo "💡 Try running 'make release' first to build the binary"
+    exit 1
+fi
+
+# Check if we have permission to run the binary
+if [ ! -x "$FLEXINGUSB_BINARY" ]; then
+    echo "❌ FlexingUSB binary is not executable"
+    echo "💡 Try running 'chmod +x $FLEXINGUSB_BINARY'"
+    exit 1
+fi
+
+# Run FlexingUSB with all passed arguments
+exec "$FLEXINGUSB_BINARY" "$@"

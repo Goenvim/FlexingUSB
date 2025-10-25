@@ -17,7 +17,7 @@ struct FlexingUSB: ParsableCommand {
           FlexingUSB list            # Show all external drives
           FlexingUSB restore         # Restore a USB to FAT32/exFAT
         """,
-        subcommands: [Start.self, Restore.self, List.self, Verify.self]
+        subcommands: [Start.self, Restore.self, List.self, Verify.self, Specs.self, Quick.self]
     )
 }
 
@@ -289,6 +289,232 @@ extension FlexingUSB {
             // Perform verification
             let writer = Writer(isoPath: isoPath, diskIdentifier: diskIdentifier)
             try writer.verify()
+        }
+    }
+    
+    /// Specs command: show detailed technical specifications
+    struct Specs: ParsableCommand {
+        static var configuration = CommandConfiguration(
+            abstract: "Shows detailed technical specifications for ISO files and USB drives.",
+            discussion: "Displays comprehensive technical information about ISO files and USB drives."
+        )
+        
+        @Option(name: .shortAndLong, help: "Path to ISO file for analysis")
+        var iso: String?
+        
+        @Option(name: .shortAndLong, help: "USB disk identifier (e.g., disk2)")
+        var usb: String?
+        
+        @Flag(name: .long, help: "Show all available specifications")
+        var all = false
+
+        func run() throws {
+            UI.printHeader("Technical Specifications")
+            
+            if let isoPath = iso {
+                try showISOSpecs(isoPath)
+            }
+            
+            if let usbDisk = usb {
+                try showUSBSpecs(usbDisk)
+            }
+            
+            if all {
+                try showAllSpecs()
+            }
+            
+            if iso == nil && usb == nil && !all {
+                UI.printMessage("Use --iso <path> to analyze an ISO file", color: .cyan)
+                UI.printMessage("Use --usb <disk> to analyze a USB drive", color: .cyan)
+                UI.printMessage("Use --all to show all available specifications", color: .cyan)
+            }
+        }
+        
+        private func showISOSpecs(_ isoPath: String) throws {
+            UI.printHeader("ISO File Specifications")
+            
+            let isoManager = ISOManager(isoPath: isoPath)
+            try isoManager.verifyExists()
+            
+            let specs = isoManager.getTechnicalSpecs()
+            
+            for (key, value) in specs {
+                UI.printMessage("\(key): \(value)", color: .white)
+            }
+            print()
+        }
+        
+        private func showUSBSpecs(_ diskIdentifier: String) throws {
+            UI.printHeader("USB Drive Specifications")
+            
+            let diskManager = DiskManager()
+            try diskManager.verifySafeDisk(diskIdentifier)
+            
+            let specs = try diskManager.getUSBTechnicalSpecs(diskIdentifier)
+            
+            for (key, value) in specs {
+                UI.printMessage("\(key): \(value)", color: .white)
+            }
+            print()
+        }
+        
+        private func showAllSpecs() throws {
+            UI.printHeader("All Available Specifications")
+            
+            // Show all external drives
+            let diskManager = DiskManager()
+            let disks = try diskManager.getExternalDisks()
+            
+            if disks.isEmpty {
+                UI.printWarning("No external drives found")
+                return
+            }
+            
+            for disk in disks {
+                UI.printMessage("USB Drive: \(disk.devicePath)", color: .cyan)
+                let specs = try diskManager.getUSBTechnicalSpecs(disk.DeviceIdentifier)
+                for (key, value) in specs {
+                    UI.printMessage("  \(key): \(value)", color: .white)
+                }
+                print()
+            }
+        }
+    }
+    
+    /// Quick command: fast operations for common tasks
+    struct Quick: ParsableCommand {
+        static var configuration = CommandConfiguration(
+            abstract: "Quick operations for common ISO-to-USB tasks.",
+            discussion: "Provides fast shortcuts for common operations like quick flash, restore, and info."
+        )
+        
+        @Argument(help: "Quick operation: flash, restore, info, or status")
+        var operation: String
+        
+        @Option(name: .shortAndLong, help: "ISO file path (for flash operation)")
+        var iso: String?
+        
+        @Option(name: .shortAndLong, help: "USB disk identifier (e.g., disk2)")
+        var usb: String?
+
+        func run() throws {
+            switch operation.lowercased() {
+            case "flash":
+                try quickFlash()
+            case "restore":
+                try quickRestore()
+            case "info":
+                try quickInfo()
+            case "status":
+                try quickStatus()
+            default:
+                UI.printError("Unknown operation: \(operation)")
+                UI.printMessage("Available operations: flash, restore, info, status", color: .cyan)
+                throw ExitCode.failure
+            }
+        }
+        
+        private func quickFlash() throws {
+            guard let isoPath = iso else {
+                UI.printError("ISO path required for flash operation")
+                UI.printMessage("Usage: FlexingUSB quick flash --iso /path/to/file.iso", color: .cyan)
+                throw ExitCode.failure
+            }
+            
+            UI.printHeader("Quick Flash")
+            UI.printMessage("Flashing \(isoPath) to USB...", color: .cyan)
+            
+            // Get first available USB drive
+            let diskManager = DiskManager()
+            let disks = try diskManager.getExternalDisks()
+            
+            if disks.isEmpty {
+                UI.printError("No external drives found")
+                throw ExitCode.failure
+            }
+            
+            let selectedDisk = disks.first!
+            UI.printMessage("Using: \(selectedDisk.devicePath)", color: .green)
+            
+            // Quick confirmation
+            if !UI.promptYesNo("Continue with quick flash?", defaultYes: true) {
+                UI.printWarning("Operation cancelled")
+                throw ExitCode.failure
+            }
+            
+            // Flash the ISO
+            let writer = Writer(isoPath: isoPath, diskIdentifier: selectedDisk.DeviceIdentifier)
+            try writer.writeWithDirectIO(dryRun: false)
+            
+            UI.printSuccess("Quick flash completed!")
+        }
+        
+        private func quickRestore() throws {
+            UI.printHeader("Quick Restore")
+            UI.printMessage("Restoring USB to FAT32/exFAT...", color: .cyan)
+            
+            let diskManager = DiskManager()
+            let disks = try diskManager.getExternalDisks()
+            
+            if disks.isEmpty {
+                UI.printError("No external drives found")
+                throw ExitCode.failure
+            }
+            
+            let selectedDisk = disks.first!
+            UI.printMessage("Using: \(selectedDisk.devicePath)", color: .green)
+            
+            // Quick confirmation
+            if !UI.promptYesNo("Continue with quick restore?", defaultYes: true) {
+                UI.printWarning("Operation cancelled")
+                throw ExitCode.failure
+            }
+            
+            // Restore the USB
+            let format = selectedDisk.sizeInGB > 32 ? "ExFAT" : "FAT32"
+            try diskManager.eraseDisk(selectedDisk.DeviceIdentifier, format: format, name: "Untitled")
+            
+            UI.printSuccess("Quick restore completed!")
+        }
+        
+        private func quickInfo() throws {
+            UI.printHeader("Quick Info")
+            
+            let diskManager = DiskManager()
+            let disks = try diskManager.getExternalDisks()
+            
+            if disks.isEmpty {
+                UI.printWarning("No external drives found")
+                return
+            }
+            
+            for disk in disks {
+                UI.printMessage("USB: \(disk.devicePath)", color: .cyan)
+                UI.printMessage("  Size: \(String(format: "%.2f GB", disk.sizeInGB))", color: .white)
+                UI.printMessage("  Name: \(disk.displayName)", color: .white)
+                UI.printMessage("  Type: \(disk.Content)", color: .white)
+            }
+        }
+        
+        private func quickStatus() throws {
+            UI.printHeader("Quick Status")
+            
+            let diskManager = DiskManager()
+            let disks = try diskManager.getExternalDisks()
+            
+            UI.printMessage("External drives: \(disks.count)", color: .cyan)
+            
+            if let isoPath = iso {
+                let isoManager = ISOManager(isoPath: isoPath)
+                do {
+                    try isoManager.verifyExists()
+                    let size = try isoManager.getFileSize()
+                    let sizeGB = Double(size) / 1_000_000_000
+                    UI.printMessage("ISO: \(isoPath) (\(String(format: "%.2f GB", sizeGB)))", color: .green)
+                } catch {
+                    UI.printMessage("ISO: \(isoPath) (not found)", color: .red)
+                }
+            }
         }
     }
 }
