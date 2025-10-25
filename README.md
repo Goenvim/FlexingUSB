@@ -65,16 +65,16 @@ See [CHANGELOG.md](CHANGELOG.md) for full details.
 
 ### Key Features
 
-- ⚡ **3-5x Faster**: Direct I/O writes at 30-50 MB/s (was 10-15 MB/s with dd)
-- 📊 **Real-time Progress**: Live speed, ETA, and completion percentage
-- 🛡️ **Safety First**: Never touches internal drives (`/dev/disk0`) - multiple safety checks prevent accidents
-- 🔍 **Fake USB Detection**: Warns about counterfeit drives with suspicious capacities (Rufus-inspired)
-- 🎯 **Intelligent Detection**: Automatically detects ISO types (Windows, Linux, macOS)
-- ✅ **Multi-hash Verification**: SHA-256 and SHA-512 checksum support
-- 🎨 **User-Friendly**: Colorized terminal output with clean progress bars
-- 💾 **16MB Buffers**: Optimized for maximum throughput
-- 🖱️ **Drag-and-Drop**: Easy file path input support
-- 🔄 **USB Restoration**: Easy restoration of USB drives to FAT32/exFAT
+-  **FAST**: Direct I/O writes at 30-50 MB/s (was 10-15 MB/s with dd)
+-  **Real-time Progress**: Live speed, ETA, and completion percentage
+-  **Safety First**: Never touches internal drives (`/dev/disk0`) - multiple safety checks prevent accidents
+-  **Fake USB Detection**: Warns about counterfeit drives with suspicious capacities (Rufus-inspired)
+-  **Intelligent Detection**: Automatically detects ISO types (Windows, Linux, macOS)
+-  **Multi-hash Verification**: SHA-256 and SHA-512 checksum support
+-  **User-Friendly**: Colorized terminal output with clean progress bars
+-  **16MB Buffers**: Optimized for maximum throughput
+-  **Drag-and-Drop**: Easy file path input support
+-  **USB Restoration**: Easy restoration of USB drives to FAT32/exFAT
 
 ---
 
