@@ -423,13 +423,6 @@ FlexingUSB uses a high-performance direct I/O writer:
    - Uses external `dd` command with raw disk device
    - Slower but universally compatible
 
-### Performance Comparison
-
-| Version | Method | Block Size | Speed | 2.8GB ISO Time |
-|---------|--------|------------|-------|----------------|
-| v1.0.0 | `dd` | 8MB | ~10-15 MB/s | 3-5 minutes |
-| **v1.1.0** | **Direct I/O** | **16MB** | **30-50 MB/s** | **1-2 minutes** |
-
 **Note**: Actual speeds depend on:
 - **USB Port**: USB 3.0/3.1 (5-10 Gbps) vs USB 2.0 (480 Mbps)
 - **Drive Quality**: High-quality drives achieve 40-50 MB/s, budget drives 20-30 MB/s
