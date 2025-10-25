@@ -15,7 +15,7 @@
 
 ## Table of Contents
 
-- [What's New in v1.1.5](#whats-new-in-v110-)
+- [What's New](#whats-new-in-v110-)
 - [Overview](#overview)
 - [Installation](#installation)
 - [Usage](#usage)
