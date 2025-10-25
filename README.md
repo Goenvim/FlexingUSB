@@ -84,9 +84,9 @@ See [CHANGELOG.md](CHANGELOG.md) for full details.
 
 ```bash
 # Download and install latest release
-curl -L https://github.com/Goenvim/FlexingUSB/releases/download/v1.1.0/FlexingUSB-v1.1.0-macos-with-installer.zip -o FlexingUSB.zip
+curl -L https://github.com/Goenvim/FlexingUSB/releases/download/v1.1.5/FlexingUSB-v1.1.5-macos-with-installer.zip -o FlexingUSB.zip
 unzip FlexingUSB.zip
-cd FlexingUSB-v1.1.0-macos-with-installer
+cd FlexingUSB-v1.1.5-macos-with-installer
 sudo ./install.sh
 ```
 
@@ -226,7 +226,7 @@ FlexingUSB list
 ═══ External Drives ═══
 
 Detected external drives:
-[1] /dev/disk2 - 64.00GB SanDisk Ultra (GUID_partition_scheme)
+[1] /dev/disk2 - 64.00GB SanDisk Ultra Fair (GUID_partition_scheme)
 
 Device: /dev/disk2
   Size: 64.00 GB
