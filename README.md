@@ -108,202 +108,588 @@ flexingusb quick flash --iso /path/to/file.iso
 ```bash
 # Clone the repository
 git clone https://github.com/Goenvim/FlexingUSB.git
- # FlexingUSB
+cd FlexingUSB
 
- A safe, fast, and user-friendly macOS command-line tool for writing ISO images to USB drives.
+# Build and install using Makefile
+make install
+```
 
- Supports interactive workflows, fast direct-I/O writes, verification, and safe defaults to protect internal disks.
+This will build a release version and install to `/usr/local/bin/` with both commands available:
+- `FlexingUSB` - Full command
+- `flexingusb` - Short command (launcher script)
 
- ---
+**Both commands work from anywhere on your system!**
 
- ## Quick links
+### Option 3: Manual Build
 
- - Repository: https://github.com/Goenvim/FlexingUSB
- - Changelog: `CHANGELOG.md`
- - Installer script: `install.sh`
- - Makefile: `Makefile`
+```bash
+# Clone and navigate
+git clone https://github.com/Goenvim/FlexingUSB.git
+cd FlexingUSB
 
- ---
+# Build release version
+swift build -c release
 
- ## Requirements
+# Manually copy to PATH
+sudo cp .build/release/FlexingUSB /usr/local/bin/
+sudo cp scripts/flexingusb /usr/local/bin/flexingusb
+sudo chmod +x /usr/local/bin/flexingusb
+```
 
- - macOS 10.15+ (Catalina or newer)
- - Swift 5.9+ (Xcode 15+ recommended for development)
- - Administrator privileges for disk operations (you will be prompted when needed)
+**Now you can use both commands from anywhere:**
+- `FlexingUSB` - Full command
+- `flexingusb` - Short command (launcher script)
 
- ---
+### Option 4: Homebrew (Coming Soon)
 
- ## Installation
+```bash
+# Future installation method
+brew install flexingusb
+```
 
- You have multiple options depending on how you like to manage tools.
+### Option 5: Global Launcher Script
 
- 1) Recommended — use the repository installer (if published releases exist):
+After installation, you can also use the shorter `flexingusb` command from anywhere:
 
- ```bash
- # Download a release, unzip, and run the bundled installer (example)
- curl -L https://github.com/Goenvim/FlexingUSB/releases/latest/download/FlexingUSB-macos.zip -o FlexingUSB.zip
- unzip FlexingUSB.zip
- cd FlexingUSB-*-macos
- sudo ./install.sh
- ```
+```bash
+# Use the shorter command
+flexingusb start
+flexingusb list
+flexingusb quick flash --iso /path/to/file.iso
+```
 
- 2) From source via Makefile (convenient):
+The launcher script automatically finds and runs the FlexingUSB binary, making it easier to use from any directory.
 
- ```bash
- git clone https://github.com/Goenvim/FlexingUSB.git
- cd FlexingUSB
- make install   # builds release and installs to /usr/local/bin
- ```
+---
 
- 3) Manual (SwiftPM):
+### Reinstalling and Uninstalling
 
- ```bash
- git clone https://github.com/Goenvim/FlexingUSB.git
- cd FlexingUSB
- swift build -c release
- sudo cp .build/release/FlexingUSB /usr/local/bin/
- sudo cp scripts/flexingusb /usr/local/bin/flexingusb
- sudo chmod +x /usr/local/bin/flexingusb
- ```
+If you already have a local clone or previously installed FlexingUSB, here are safe
+commands to update (reinstall) or remove the installed binaries. This section is
+intended to be non-destructive for your repo — inspect the commands before running.
 
- Reinstall/update: pull latest changes and run `make install` (or rebuild manually):
+Reinstall / update from a local clone:
 
- ```bash
- cd FlexingUSB
- git pull --rebase
- make install
- ```
+```bash
+cd /path/to/FlexingUSB
+git pull --rebase origin main
+make install    # builds release and installs to /usr/local/bin
+```
 
- Uninstall / delete the installed commands:
+If you installed via a release package (zip/installer), re-download the release and
+re-run the bundled `install.sh` from the unpacked release directory.
 
- ```bash
- sudo rm -f /usr/local/bin/FlexingUSB
- sudo rm -f /usr/local/bin/flexingusb
- ```
+Uninstall / delete installed commands:
 
- Notes:
- - The `install.sh` and `Makefile` (where present) are convenience helpers — inspect them before running.
- - Homebrew formula is not provided here (planned). If you want a formula, I can create one.
+```bash
+sudo rm -f /usr/local/bin/FlexingUSB
+sudo rm -f /usr/local/bin/flexingusb
+```
 
- ---
+Notes:
+- Always inspect `install.sh` and the `Makefile` before running them so you know
+   what will be installed/overwritten.
+- If you installed manually (copied the binary into PATH), remove the binary from
+   wherever you placed it (for example `/usr/local/bin`).
 
- ## Quick usage examples
 
- Run the interactive workflow (recommended):
+## Usage
 
- ```bash
- FlexingUSB start
- ```
+### Quick Start
 
- List external drives (safe, non-destructive):
+```bash
+# Interactive ISO-to-USB workflow
+FlexingUSB start
 
- ```bash
- FlexingUSB list
- ```
+# List all external drives
+FlexingUSB list
 
- Quick flash (uses first detected external drive):
+# Restore a USB to FAT32/exFAT
+FlexingUSB restore
 
- ```bash
- FlexingUSB quick flash --iso /path/to/image.iso
- ```
+# Verify a written ISO
+FlexingUSB verify /path/to/image.iso disk2
 
- Restore the first external drive to FAT32/exFAT:
+# Show technical specifications
+FlexingUSB specs --iso /path/to/image.iso
+FlexingUSB specs --usb disk2
 
- ```bash
- FlexingUSB quick restore
- ```
+# Quick operations
+FlexingUSB quick flash --iso /path/to/image.iso
+FlexingUSB quick restore
+FlexingUSB quick info
+```
 
- Verify a written image against an ISO file:
+### Commands
 
- ```bash
- FlexingUSB verify /path/to/image.iso disk2
- ```
+#### `start` - Flash an ISO to USB
 
- Show technical specs for an ISO or USB drive:
+The main command that guides you through the entire process:
 
- ```bash
- FlexingUSB specs --iso /path/to/image.iso
- FlexingUSB specs --usb disk2
- ```
+```bash
+FlexingUSB start [--dry-run] [--skip-verify]
+```
 
- Command-line help (per-command):
+**Workflow:**
+1. Detects all external USB drives
+2. Optional bad blocks/fake capacity check (Rufus-inspired)
+3. Prompts for ISO file path (drag-and-drop supported)
+4. Detects ISO type (Windows/Linux/macOS)
+5. Optionally provides Windows TPM bypass information
+6. Simple y/n confirmation before writing
+7. Writes ISO to USB with real-time progress (30-50 MB/s)
+8. Optionally verifies written data with SHA-256/SHA-512
 
- ```bash
- FlexingUSB --help
- FlexingUSB start --help
- FlexingUSB quick --help
- ```
+**Options:**
+- `--dry-run`: Simulate the operation without actually writing
+- `--skip-verify`: Skip the verification step after writing
 
- ---
+#### `list` - Show External Drives
 
- ## Safety and behavior notes
+Lists all connected external USB drives with detailed information:
 
- - The tool intentionally blocks any operation on the internal macOS disk (typically `/dev/disk0`).
- - External disks are detected using `diskutil` and additional heuristics to avoid listing virtual/disk-image devices.
- - The `start` flow unmounts target disks and performs destructive writes — read prompts carefully.
- - Use `--dry-run` on `start` to preview the exact commands the tool would run without touching disks.
+```bash
+FlexingUSB list
+```
 
- ---
+**Output:**
+```
+═══ External Drives ═══
 
- ## Reinstalling and updating
+Detected external drives:
+[1] /dev/disk2 - 64.00GB SanDisk Ultra Fair (GUID_partition_scheme)
 
- To update a local clone and reinstall the binary:
+Device: /dev/disk2
+  Size: 64.00 GB
+  Content: GUID_partition_scheme
+  Volume: SanDisk
+  Mounted: /Volumes/SanDisk
+```
 
- ```bash
- cd /path/to/FlexingUSB
- git pull --rebase origin main
- make install    # or repeat the manual build+copy steps
- ```
+#### `restore` - Restore USB Drive
 
- If you installed via a release package, download and run the new installer or re-run `install.sh` from the unpacked release.
+Erases and formats a USB drive back to a usable state:
 
- ---
+```bash
+FlexingUSB restore [--format FAT32|ExFAT] [--name VolumeName]
+```
 
- ## Troubleshooting
+**Options:**
+- `--format`: Specify format (FAT32 or ExFAT). Auto-detects based on size if not specified
+- `--name`: Custom volume name (default: "Untitled")
 
- - "No external disks found":
-   - Confirm the USB is plugged in and powered.
-   - Try a different USB port or cable.
-   - Check macOS Disk Utility to verify the system sees the drive.
-   - Some disk images or emulator devices may appear in `diskutil` — the tool filters those out by default. Use `diskutil list` to inspect raw output.
+**Example:**
+```bash
+FlexingUSB restore --format ExFAT --name "MyUSB"
+```
 
- - "Permission denied": desktop operations require admin access; you will be prompted for your password when necessary.
+#### `verify` - Verify Written ISO
 
- - If a write fails or verification fails, try a different USB stick — counterfeit/failing drives are common.
+Verifies that a USB drive matches an ISO file:
 
- If you want more diagnostics, run `FlexingUSB list` and then inspect `diskutil info -plist <disk>` for the listed device.
+```bash
+FlexingUSB verify <iso-path> <disk-identifier>
+```
 
- ---
+**Arguments:**
+- `iso-path`: Path to the ISO file
+- `disk-identifier`: Disk identifier (e.g., disk2)
 
- ## Contributing
+**Example:**
+```bash
+FlexingUSB verify ~/Downloads/ubuntu.iso disk2
+```
 
- Contributions are welcome. Typical workflow:
+#### `specs` - Technical Specifications
 
- ```bash
- fork -> clone -> feature branch -> commit -> push -> PR
- ```
+Shows detailed technical specifications for ISO files and USB drives:
 
- Development helpers:
+```bash
+FlexingUSB specs --iso <iso-path>
+FlexingUSB specs --usb <disk-identifier>
+FlexingUSB specs --all
+```
 
- ```bash
- make build      # debug build
- swift run FlexingUSB list
- make release    # release build
- make test       # run tests (if present)
- ```
+**Options:**
+- `--iso`: Analyze an ISO file and show its technical specifications
+- `--usb`: Analyze a USB drive and show its technical specifications
+- `--all`: Show specifications for all available USB drives
 
- Please follow existing code style, add tests for new behavior, and open an issue if you're unsure about a change.
+**Examples:**
+```bash
+# Analyze an ISO file
+FlexingUSB specs --iso ~/Downloads/ubuntu-22.04.iso
 
- ---
+# Analyze a USB drive
+FlexingUSB specs --usb disk2
 
- ## License
+# Show all available specifications
+FlexingUSB specs --all
+```
 
- This project is licensed under the MIT License — see `LICENSE` for details.
+#### `quick` - Quick Operations
 
- ---
+Fast shortcuts for common ISO-to-USB tasks:
 
- If you'd like, I can also add:
- - a verbose logging/debug flag that shows why a disk was accepted/ignored, and
- - a small unit test suite that verifies the `diskutil`-parsing heuristics using sample plists.
+```bash
+FlexingUSB quick <operation> [options]
+```
 
- Made for macOS users who need safe, fast ISO-to-USB tooling.
+**Operations:**
+- `flash`: Quickly flash an ISO to the first available USB drive
+- `restore`: Quickly restore the first available USB drive to FAT32/exFAT
+- `info`: Show quick information about connected USB drives
+- `status`: Show system status and drive information
+
+**Examples:**
+```bash
+# Quick flash (uses first available USB drive)
+FlexingUSB quick flash --iso ~/Downloads/ubuntu.iso
+
+# Quick restore (formats first available USB drive)
+FlexingUSB quick restore
+
+# Quick info about USB drives
+FlexingUSB quick info
+
+# System status
+FlexingUSB quick status --iso ~/Downloads/ubuntu.iso
+```
+
+---
+
+## Safety Features
+
+FlexingUSB includes multiple layers of protection:
+
+1. **Internal Disk Protection**: 
+   - Automatically blocks operations on `/dev/disk0` (internal macOS disk)
+   - Verifies disk is external before any operation
+
+2. **Explicit Confirmation**:
+   - Simple y/n confirmation before destructive operations
+   - Shows detailed information about what will be erased
+
+3. **Dry Run Mode**:
+   - Test operations without actually writing data
+   - See exactly what commands would be executed
+
+4. **Verification**:
+   - Optional SHA-256 and SHA-512 checksum verification
+   - Byte-for-byte comparison ensures written data matches source ISO
+   - Real-time hashing with progress indicators
+
+5. **Error Handling**:
+   - Graceful error messages
+   - Safe cleanup on failures
+
+---
+
+## Architecture
+
+FlexingUSB is built with a modular, maintainable architecture:
+
+```
+FlexingUSB/
+├── Package.swift              # Swift Package Manager configuration
+├── Makefile                   # Build automation
+├── Sources/FlexingUSB/
+│   ├── main.swift            # CLI entry point & command routing
+│   ├── DiskManager.swift     # Disk detection & operations
+│   ├── ISOManager.swift      # ISO detection & validation
+│   ├── Writer.swift          # ISO writing & verification orchestration
+│   ├── DirectWriter.swift    # Direct I/O writer (Rufus-style)
+│   ├── BadBlockChecker.swift # Fake USB detection
+│   └── UI.swift              # Terminal UI & user interaction
+└── Documentation/
+    ├── README.md
+    ├── INSTALL.md
+    ├── QUICKSTART.md
+    ├── CONTRIBUTING.md
+    ├── SECURITY.md
+    └── VERIFICATION_REPORT.md
+```
+
+### Module Responsibilities
+
+- **`main.swift`**: ArgumentParser commands and workflow orchestration
+- **`DiskManager.swift`**: Disk enumeration, safety checks, formatting
+- **`ISOManager.swift`**: ISO type detection, file validation, checksum calculation
+- **`Writer.swift`**: High-level write orchestration and verification
+- **`DirectWriter.swift`**: Low-level direct I/O writes with 16MB buffers
+- **`BadBlockChecker.swift`**: USB capacity verification and fake drive detection
+- **`UI.swift`**: Terminal output, colors, progress bars, user prompts
+
+---
+
+## Technical Details
+
+### Requirements
+
+- **macOS**: 10.15 (Catalina) or later
+- **Swift**: 5.9+
+- **Xcode**: 15.0+ (for development)
+- **Privileges**: sudo access for disk operations
+
+### Technologies Used
+
+- **Swift Package Manager**: Dependency management and building
+- **ArgumentParser**: Command-line argument parsing from Apple
+- **CryptoKit**: SHA-256 and SHA-512 checksum calculation
+- **Foundation**: Low-level file I/O, process execution, and POSIX APIs
+- **Darwin**: Direct system calls for O_SYNC, fsync, and raw device access
+
+### Write Methods
+
+FlexingUSB uses a high-performance direct I/O writer:
+
+1. **Direct I/O** (default in v1.1.0+): Fast, native Swift implementation
+   - 16MB buffer size for maximum throughput
+   - Direct file-to-device writes (no external commands)
+   - Real-time progress with speed and ETA
+   - 30-50 MB/s average speed (3-5x faster than dd)
+   - Inspired by Rufus's approach
+
+2. **Legacy dd/asr** (fallback): Available in Writer.swift for compatibility
+   - Uses external `dd` command with raw disk device
+   - Slower but universally compatible
+
+**Note**: Actual speeds depend on:
+- **USB Port**: USB 3.0/3.1 (5-10 Gbps) vs USB 2.0 (480 Mbps)
+- **Drive Quality**: High-quality drives achieve 40-50 MB/s, budget drives 20-30 MB/s
+- **ISO Size**: Larger ISOs benefit more from the optimized buffer size
+- **System Load**: Background processes may impact performance
+
+---
+
+## Use Cases
+
+### Creating Linux Bootable USB
+
+```bash
+# Download Ubuntu ISO
+# Run FlexingUSB
+FlexingUSB start
+
+# Follow interactive prompts
+# Boot from USB on target machine
+```
+
+### Creating Windows Installation USB
+
+```bash
+# Download Windows 11 ISO
+FlexingUSB start
+
+# Tool detects Windows and offers TPM bypass info
+# Creates bootable Windows USB
+```
+
+### Creating macOS Installer USB
+
+```bash
+# Download macOS installer DMG/ISO
+FlexingUSB start
+
+# Creates bootable macOS installer
+```
+
+### Restoring USB After Use
+
+```bash
+# Restore USB to normal storage
+FlexingUSB restore
+
+# USB is now formatted and ready for files
+```
+
+---
+
+## Troubleshooting
+
+### "No external disks found"
+
+**Problem**: FlexingUSB doesn't see your USB drive.
+
+**Solutions**:
+- Ensure USB drive is properly connected
+- Try a different USB port
+- Check Disk Utility to see if macOS recognizes the drive
+- Try unplugging and replugging the drive
+
+### "Permission denied" errors
+
+**Problem**: Insufficient privileges for disk operations.
+
+**Solutions**:
+- FlexingUSB requires admin privileges for disk operations
+- You'll be prompted for your password when needed
+- Ensure your user account has admin privileges
+- Run commands normally (don't prefix with sudo)
+
+### Write is very slow
+
+**Problem**: Writing takes longer than expected.
+
+**Solutions**:
+- With v1.1.0+, writes should be 30-50 MB/s (check version with `FlexingUSB --version`)
+- Typical times: 2.8GB ISO in 1-2 minutes, 4-5GB ISO in 2-3 minutes
+- Ensure you're using USB 3.0 ports for faster speeds
+- Avoid USB hubs when possible
+- Slow USB 2.0 drives may only achieve 10-15 MB/s (hardware limitation)
+
+### Verification failed
+
+**Problem**: USB checksum doesn't match ISO.
+
+**Solutions**:
+- The write may have failed - try writing again
+- Check USB drive for hardware issues
+- Try a different USB drive
+- Verify ISO file isn't corrupted (check download)
+
+### "Internal disk not allowed" error
+
+**Problem**: Trying to use /dev/disk0.
+
+**Solution**: This is intentional! FlexingUSB blocks operations on internal disks for safety. Use an external USB drive only.
+
+---
+
+## Contributing
+
+Contributions are welcome! Here's how you can help:
+
+### Development Setup
+
+```bash
+# Clone and setup
+git clone https://github.com/Goenvim/FlexingUSB.git
+cd FlexingUSB
+
+# Build debug version
+make build
+
+# Run without installing
+swift run FlexingUSB list
+
+# Build release version
+make release
+
+# Run tests (when available)
+make test
+
+# Format code (requires swift-format)
+make format
+```
+
+### Areas for Contribution
+
+- Add unit tests for disk parsing and safety checks
+- Implement actual Windows ISO patching (TPM removal)
+- Complete bad blocks checking implementation
+- Create Homebrew formula for easy installation
+- Add localization support
+- Add write speed benchmarking and comparison tools
+- Add SwiftUI front-end option
+- Improve error handling and recovery
+- Add disk cloning functionality
+- Create preset profiles for popular ISOs
+
+### Code Style
+
+- Use Swift naming conventions
+- Add doc comments for public APIs
+- Keep functions focused and modular
+- Include error handling for all operations
+- Write descriptive commit messages
+
+---
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+```
+MIT License
+
+Copyright (c) 2025 FlexingUSB Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+---
+
+## Acknowledgments
+
+- Direct I/O techniques inspired by [Rufus](https://rufus.ie/) by Pete Batard
+- Also inspired by [Etcher](https://www.balena.io/etcher/) and traditional Unix utilities (`dd`, `asr`)
+- Built with Swift and modern macOS frameworks
+- Thanks to the open-source community for feedback and contributions
+- Special thanks to the Swift community for ArgumentParser and excellent tooling
+
+---
+
+## Support
+
+- **Issues**: [GitHub Issues](https://github.com/Goenvim/FlexingUSB/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/Goenvim/FlexingUSB/discussions)
+- **Documentation**: See [QUICKSTART.md](QUICKSTART.md) and [INSTALL.md](INSTALL.md)
+- **Security**: See [SECURITY.md](SECURITY.md)
+
+---
+
+## Roadmap
+
+### v1.1.5 (Current - Released October 24, 2025)
+- ✅ Direct I/O writer with 16MB buffers
+- ✅ Real-time progress with speed & ETA
+- ✅ Fake USB detection (Rufus-inspired)
+- ✅ SHA-512 hash support
+- ✅ 3-5x performance improvement
+- ✅ Drag-and-drop file path support
+- ✅ Simple y/n confirmations
+
+### v1.1.6 (Planned - Halloween or 8th November 2025)
+- Unit test suite
+- Complete bad blocks implementation
+- Homebrew formula (Hopefully)
+- Write speed benchmarking
+- Performance profiling tools
+- Bug fixes and stability improvements
+
+### v1.2.0 or v2.0 (Planned - Christmas 2025)
+- Full Windows ISO patching implementation
+- GUI mode with SwiftUI (optional)
+- Preset profiles for popular ISOs
+- Multi-USB writing (parallel writes)
+- Disk cloning functionality
+- Network ISO downloads
+- Enhanced verification options
+
+### v2.x (Future - 2026)
+- Advanced features and community requests
+- Performance optimizations
+- Platform expansion considerations
+
+---
+
+<p align="center">
+  Built for the macOS community
+</p>
